@@ -1,0 +1,39 @@
+; -------------------------- How to use this file ---------------------------------
+;
+; To run this installer in quiet mode:
+; 1. Edit the information below to match your company information and install location.
+; 2. Run : setup.exe <path to this file> /q /AcceptLicenses yes. Passing the value "yes"
+; to the /AcceptLicenses parameter indicates that you agree with the license agreements.
+; Alternatively, instead of /q, /qb can be used to run the installer in basic UI mode.
+; 3. The installer will automatically restart your system after the installation is done. 
+; To prevent the restart use the command line : setup.exe <path to this file> /r:n /q /AcceptLicenses yes
+;
+; For more information on installation automation visit Info Codes - National Instruments and enter the infocode exdir3.
+
+
+; -------------------------- Set feature states ---------------------------------
+; The valid feature states are: Local, Absent, NoChange, Default
+; Local - Install it (on the local hard drive). If already installed leave it installed.
+; Absent - Do not install it. If already installed uninstall it.
+; NoChange - Do not install it. If already installed, leave it installed.
+; Default is equivalent to not listing the feature in this file. The feature follows its default behaviour.
+
+[Features]
+LEGO_EV3_EDU_Feature.EV3.EDU.121=Local
+EV3_EDU_Mode.EV3.EDU.MODE.121=Local
+
+
+; -------------------------- Set install directories ---------------------------------
+; *** To use the default paths, remove the following section***
+
+[Directories]
+LEGO_EV3_EDU_Feature.EV3.EDU.121=C:\Program Files\Legosoftware
+
+
+; -------------------------- Set general installation settings ---------------------------------
+[InstallationType]
+;uncomment one of the following lines for student vs teacher install
+DefaultRadioButton=TeacherInstall
+;DefaultRadioButton=StudentInstall
+
+---
