@@ -58,8 +58,8 @@ Try {
 	## Variables: Application
 	[string]$appVendor = ''
 	[string]$appName = 'Keyshot'
-	[string]$appVersion = '1.0'
-	[string]$appArch = ''
+	[string]$appVersion = '6.3.23'
+	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
@@ -132,7 +132,7 @@ Try {
 		}
 		
 		## <Perform Installation tasks here>
-		
+		Execute-Process -Path "$dirFiles\keyshot_floating_w64_6.0.266.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas22.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden'
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -140,7 +140,7 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		## <Perform Post-Installation tasks here>
-		
+		Execute-Process -Path "$dirFiles\keyshot_Floating_w64_6.3.23_update.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas22.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden' -WaitForMsiExec:$true
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {}
 	}
@@ -158,7 +158,7 @@ Try {
 		Show-InstallationProgress
 		
 		## <Perform Pre-Uninstallation tasks here>
-		
+		Remove-File -Path '$envCommonDesktop\Keyshot 6 FLoating 64.lnk'
 		
 		##*===============================================
 		##* UNINSTALLATION
@@ -172,7 +172,7 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		
+		Execute-Process -Path "$envProgramFiles\KeyShot6 Floating\uninst.exe" -Parameters "/S_?=`"C:\Program Files\KeyShot 6`""
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
