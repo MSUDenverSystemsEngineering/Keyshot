@@ -29,7 +29,7 @@
 	60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
 	69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
 	70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
-.LINK 
+.LINK
 	http://psappdeploytoolkit.com
 #>
 [CmdletBinding()]
@@ -51,41 +51,41 @@ Param (
 Try {
 	## Set the script execution policy for this process
 	Try { Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop' } Catch {Write-Error -Message "Unable to set the PowerShell Execution Policy to Bypass for this process."}
-	
+
 	##*===============================================
 	##* VARIABLE DECLARATION
 	##*===============================================
 	## Variables: Application
-	[string]$appVendor = ''
+	[string]$appVendor = 'Luxion'
 	[string]$appName = 'Keyshot'
-	[string]$appVersion = '6.3.23'
+	[string]$appVersion = '8.2.80'
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '05/17/2017'
-	[string]$appScriptAuthor = 'Quan Tran'
+	[string]$appScriptDate = '02/14/2019'
+	[string]$appScriptAuthor = 'Quan Tran, Steve Patterson, Truong Nguyen'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = ''
 	[string]$installTitle = ''
-	
+
 	##* Do not modify section below
 	#region DoNotModify
-	
+
 	## Variables: Exit Code
 	[int32]$mainExitCode = 0
-	
+
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
 	[version]$deployAppScriptVersion = [version]'3.6.9'
 	[string]$deployAppScriptDate = '02/12/2017'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
-	
+
 	## Variables: Environment
 	If (Test-Path -LiteralPath 'variable:HostInvocation') { $InvocationInfo = $HostInvocation } Else { $InvocationInfo = $MyInvocation }
 	[string]$scriptDirectory = Split-Path -Path $InvocationInfo.MyCommand.Definition -Parent
-	
+
 	## Dot source the required App Deploy Toolkit Functions
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
@@ -98,49 +98,65 @@ Try {
 		## Exit the script, returning the exit code to SCCM
 		If (Test-Path -LiteralPath 'variable:HostInvocation') { $script:ExitCode = $mainExitCode; Exit } Else { Exit $mainExitCode }
 	}
-	
+
 	#endregion
 	##* Do not modify section above
 	##*===============================================
 	##* END VARIABLE DECLARATION
 	##*===============================================
-		
+
 	If ($deploymentType -ine 'Uninstall') {
 		##*===============================================
 		##* PRE-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
-		
+
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
-		
+		Show-InstallationWelcome -CheckDiskSpace -PersistPrompt -CloseApps 'keyshot,keyshot_daemon' -CloseAppsCountdown 60
+
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
-		
+
 		## <Perform Pre-Installation tasks here>
-		
-		
+		## Uninstall Keyshot 6
+		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot6 Floating\uninst.exe") -PathType 'Leaf') {
+			Write-Log -Message 'Keyshot will be uninstalled.' -Source $deployAppScriptFriendlyName
+			Remove-File -Path "$envCommonDesktop\Keyshot 6 Floating 64.lnk"
+			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot6 Floating\uninst.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		}
+
+		## Uninstall Keyshot 7
+		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot7\uninst.exe") -PathType 'Leaf') {
+			Write-Log -Message 'Keyshot will be uninstalled.' -Source $deployAppScriptFriendlyName
+			Remove-File -Path "$envCommonDesktop\Keyshot 7 64.lnk"
+			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot7\uninst.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		}
+
 		##*===============================================
-		##* INSTALLATION 
+		##* INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Installation'
-		
+
 		## Handle Zero-Config MSI Installations
 		If ($useDefaultMsi) {
 			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Install'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
 			Execute-MSI @ExecuteDefaultMSISplat; If ($defaultMspFiles) { $defaultMspFiles | ForEach-Object { Execute-MSI -Action 'Patch' -Path $_ } }
 		}
-		
+
 		## <Perform Installation tasks here>
-		Execute-Process -Path "$dirFiles\keyshot_floating_w64_6.0.266.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas22.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden'
-		
+		$exitCode = Execute-Process -Path "$dirFiles\keyshot_w64_8.2.80.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas22.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden'
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+
+
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Installation'
-		
+
 		## <Perform Post-Installation tasks here>
-		Execute-Process -Path "$dirFiles\keyshot_Floating_w64_6.3.23_update.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas22.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden' -WaitForMsiExec:$true
+
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {}
 	}
@@ -150,21 +166,24 @@ Try {
 		##* PRE-UNINSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Pre-Uninstallation'
-		
+
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
-		
+		Show-InstallationWelcome -CloseApps 'keyshot,keyshot_daemon' -CloseAppsCountdown 60
+
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
-		
+
 		## <Perform Pre-Uninstallation tasks here>
-		Remove-File -Path '$envCommonDesktop\Keyshot 6 FLoating 64.lnk'
-		
+		# Stop keyshot processes because the keyshot uninstaller is garbage
+		Stop-Process -name 'keyshot' -Force
+		Stop-Process -name 'keyshot_daemon' -Force
+		Remove-File -Path '$envCommonDesktop\Keyshot 8.lnk'
+
 		##*===============================================
 		##* UNINSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
-		
+
 		## Handle Zero-Config MSI Uninstallations
 		If ($useDefaultMsi) {
 			[hashtable]$ExecuteDefaultMSISplat =  @{ Action = 'Uninstall'; Path = $defaultMsiFile }; If ($defaultMstFile) { $ExecuteDefaultMSISplat.Add('Transform', $defaultMstFile) }
@@ -172,22 +191,23 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		Execute-Process -Path "$envProgramFiles\KeyShot6 Floating\uninst.exe" -Parameters "/S_?=`"C:\Program Files\KeyShot 6`""
-		
+		$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot8\uninst.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+
 		##*===============================================
 		##* POST-UNINSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Uninstallation'
-		
+
 		## <Perform Post-Uninstallation tasks here>
-		
-		
+
+
 	}
-	
+
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================
-	
+
 	## Call the Exit-Script function to perform final cleanup operations
 	Exit-Script -ExitCode $mainExitCode
 }
