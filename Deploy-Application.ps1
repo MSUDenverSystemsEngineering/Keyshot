@@ -127,26 +127,18 @@ Try {
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-		## Uninstall Keyshot 6
-		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot6 Floating\uninst.exe") -PathType 'Leaf') {
-			Write-Log -Message 'Keyshot will be uninstalled.' -Source $deployAppScriptFriendlyName
-			Remove-File -Path "$envCommonDesktop\Keyshot 6 Floating 64.lnk"
-			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot6 Floating\uninst.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
-			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
-		}
-
-		## Uninstall Keyshot 7
-		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot7\uninst.exe") -PathType 'Leaf') {
-			Write-Log -Message 'Keyshot will be uninstalled.' -Source $deployAppScriptFriendlyName
-			Remove-File -Path "$envCommonDesktop\Keyshot 7 64.lnk"
-			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot7\uninst.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
-			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
-		}
-
+		## Remove last two versions
 		## Uninstall Keyshot 8
 		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot8\uninstall.exe") -PathType 'Leaf') {
-			Write-Log -Message 'Keyshot will be uninstalled.' -Source $deployAppScriptFriendlyName
+			Write-Log -Message 'Keyshot 8 was uninstalled during Pre-Install.' -Source $deployAppScriptFriendlyName
 			Remove-File -Path "$envCommonDesktop\KeyShot 8.lnk"
+			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot8\uninstall.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		}
+
+		If (Test-Path -LiteralPath (Join-Path -Path $envSystemDrive -ChildPath "$envProgramFiles\KeyShot9\uninstall.exe") -PathType 'Leaf') {
+			Write-Log -Message 'Keyshot 9 was uninstalled during Pre-Install' -Source $deployAppScriptFriendlyName
+			Remove-File -Path "$envCommonDesktop\KeyShot 9.lnk"
 			$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot8\uninstall.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
 			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 		}
@@ -163,7 +155,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "$dirFiles\keyshot_win64_9.3.14.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas32.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden'
+		$exitCode = Execute-Process -Path "$dirFiles\keyshot_win64_10.1.82.exe" -Parameters '/S /AllUsers /FlexLM=27070@vmwas32.winad.msudenver.edu /NO_UPDATE /NO_CLOUD' -WindowStyle 'Hidden'
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 		##*===============================================
@@ -172,6 +164,7 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
+		Remove-File -Path '$envCommonDesktop\Keyshot 10.lnk'
 
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {
@@ -208,7 +201,7 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-		$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot9\uninstall.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
+		$exitCode = Execute-Process -Path "$envProgramFiles\KeyShot10\uninstall.exe" -Parameters "/S" -WindowStyle "Hidden" -WaitForMsiExec -PassThru
 		Wait-Process -name Un_A
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
