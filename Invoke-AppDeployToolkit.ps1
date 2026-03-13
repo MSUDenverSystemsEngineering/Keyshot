@@ -152,7 +152,7 @@ function Install-ADTDeployment
     }
 
     ## <Perform Installation tasks here>
-    Start-ADTProcess -FilePath "keyshot_win64_2024.1_13.0.0.92.exe" -ArgumentList "/S /AllUsers /FlexLM=27070@vmwas32.winad.msudenver.edu /NO_UPDATE"
+    Start-ADTProcess -FilePath "keyshot_studio_win64_2025.3_14.2.2.1.exe" -ArgumentList "/S /AllUsers /FlexLM=27070@vmwas32.winad.msudenver.edu /NO_UPDATE"
 
     ##================================================
     ## MARK: Post-Install
@@ -202,7 +202,7 @@ function Uninstall-ADTDeployment
     }
 
     ## <Perform Uninstallation tasks here>
-    Start-ADTProcess -FilePath "C:\Program Files\Keyshot\uninstall.exe" -ArgumentList "/S"
+    Start-ADTProcess -FilePath "C:\Program Files\KeyShot Studio\uninstall.exe" -ArgumentList "/S"
 
     ##================================================
     ## MARK: Post-Uninstallation
